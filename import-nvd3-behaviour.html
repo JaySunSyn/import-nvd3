@@ -18,6 +18,15 @@
             },
 
             /**
+             * Attribute that contains if respective charts should be stacked or grouped
+             */
+            stacked: {
+                type: Boolean,
+                value: false,
+                observer: '_update'
+            },
+
+            /**
              * The `url` attribute specifies an url to get the JSON data that
              * is used in the nvd3 chart.`
              * You can use the `params` attribute to specify the parameters in
@@ -140,9 +149,18 @@
         _create: function() {
             nv.addGraph(function() {
                 this._chart = this.nvModel();
+
+                if (this.nvModel.toString() == nv.models.pieChart.toString()) {
+                    // PIE CHART
+                    this._chart.x(function(d) { return d.label });
+                    this._chart.y(function(d) { return d.value });
+                };
+
                 this.onCreate(this._chart, this._svg);
                 this._update();
 
+                this._updateStackedState();
+                
                 Resizer.add(this.root, function() {
                     this._update();
                 }.bind(this));
@@ -158,11 +176,26 @@
          */
         _update: function() {
             if(!this._chart || !this.data.length) return;
+            this._updateStackedState();
 
             this.formatData(this.data);
             this._svg.datum(this.data)
                 .call(this._chart);
             this._resize();
+        },
+
+
+        /**
+         * Updates the stack attribute of applicable charts.
+         */
+
+        _updateStackedState: function() {
+            if(!this._chart || !this.data.length) return;
+
+            if (this.nvModel.toString() == nv.models.multiBarChart.toString()) {
+                // MULTI BAR
+                this._chart.stacked(this.stacked);
+            };
         },
 
         /**
