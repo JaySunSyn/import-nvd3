@@ -154,7 +154,8 @@
                     // PIE CHART
                     this._chart.x(function(d) { return d.label });
                     this._chart.y(function(d) { return d.value });
-                };
+
+                }; 
 
                 this.onCreate(this._chart, this._svg);
                 this._update();
@@ -177,6 +178,21 @@
         _update: function() {
             if(!this._chart || !this.data.length) return;
             this._updateStackedState();
+
+
+            if(this.nvModel.toString() == nv.models.lineWithFocusChart.toString()){
+                    // LINE VIEW FINDER
+                    // Workaround to allow string as XAxis labels
+
+                    data = this.data;
+                    this._chart.xAxis.axisLabel("Time")
+                        .showMaxMin(false) 
+                        .tickFormat(function (d) {
+                          return data[0].values[d].label;
+                          })
+                    ;
+
+            };
 
             this.formatData(this.data);
             this._svg.datum(this.data)
