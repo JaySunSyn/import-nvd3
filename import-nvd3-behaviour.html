@@ -75,6 +75,17 @@
             },
 
             /**
+             * Show controls of the chart
+             * 
+             */
+
+             showControls:{
+                type:Boolean,
+                value:false,
+                observer: '_update'
+             },
+
+            /**
              * This properties changes the behaviour of the height of the chart.
              * If this property is not defined, the height is set to the width
              * divided by the golden ratio. If this property is defined, the
@@ -89,7 +100,9 @@
                 value: false,
                 reflectToAttribute: true,
                 observer: '_resize'
-            }
+            },
+
+
         },
         created: function() {
             this._chart = null;
@@ -154,7 +167,6 @@
                     // PIE CHART
                     this._chart.x(function(d) { return d.label });
                     this._chart.y(function(d) { return d.value });
-
                 }; 
 
                 this.onCreate(this._chart, this._svg);
@@ -185,13 +197,18 @@
                     // Workaround to allow string as XAxis labels
 
                     data = this.data;
-                    this._chart.xAxis.axisLabel("Time")
+                    this._chart.xAxis.axisLabel("")
                         .showMaxMin(false) 
                         .tickFormat(function (d) {
                           return data[0].values[d].label;
                           })
                     ;
 
+                    this._chart.showLegend(this.showControls);
+
+            }else if(this.nvModel.toString() == nv.models.pieChart.toString()){
+                // PIE
+                this._chart.showLegend(this.showControls);
             };
 
             this.formatData(this.data);
