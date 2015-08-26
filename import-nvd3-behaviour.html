@@ -225,12 +225,16 @@
                           return '';
                           })
 
-                    this._chart.showLegend(this.showControls);
-
             }else if(this.nvModel.toString() == nv.models.pieChart.toString()){
                 // PIE
-                this._chart.showLegend(this.showControls);
-            };
+
+
+            }else if (this.nvModel.toString() == nv.models.multiBarChart.toString()){
+                // BAR
+                this._chart.showControls(this.showControls);
+            }
+
+            this._chart.showLegend(this.showControls);
 
             this.formatData(this.data);
             this._svg.datum(this.data)
