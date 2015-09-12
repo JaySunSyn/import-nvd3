@@ -16,7 +16,6 @@
                 value: function() { return []; },
                 observer: '_update'
             },
-
             /**
              * Attribute that contains if respective charts should be stacked or grouped
              */
@@ -25,7 +24,6 @@
                 value: false,
                 observer: '_update'
             },
-
             /**
              * The `url` attribute specifies an url to get the JSON data that
              * is used in the nvd3 chart.`
@@ -39,7 +37,6 @@
                 value: '',
                 observer: '_request'
             },
-
             /**
              * The `params` attribute specifies the parameters to the url
              * specified in the `url` attribute, in JSON. This attribute works
@@ -52,7 +49,6 @@
                 value: '',
                 observer: '_request'
             },
-
             /**
              * If specified, the width of the chart will be this value. If not,
              * it will be the width of the parent element. If there isn't a
@@ -63,7 +59,6 @@
                 value: 0,
                 observer: '_resize'
             },
-
             /**
              * If specified, the height of the chart will be this value. If not,
              * see the 'fit' property for the behaviour of the height.
@@ -73,18 +68,15 @@
                 value: 0,
                 observer: '_resize'
             },
-
             /**
              * Show controls of the chart
              * 
              */
-
              showControls:{
                 type:Boolean,
                 value:false,
                 observer: '_update'
              },
-
             /**
              * This properties changes the behaviour of the height of the chart.
              * If this property is not defined, the height is set to the width
@@ -101,168 +93,118 @@
                 reflectToAttribute: true,
                 observer: '_resize'
             },
-
-
         },
         created: function() {
             this._chart = null;
             this._svg = d3.select(this.root).append('div').append('svg');
             this._ajax = document.createElement('iron-ajax');
             this._ajax.handleAs = 'json';
-
             // To add the offsetWidth property to this.root.
             this.style.display = "block";
-
         },
         ready: function() {
             this._create();
         },
-
         /**
          * Default onCreate() function. Replace with your own,
          * setting the configuration.
          */
         onCreate: function(chart, svg) {
-
         },
-
         /**
          * Default afterCreate() function. Replace with your own if you want.
          */
         afterCreate: function(chart, svg) {
-
         },
-
         /**
          * Format the data before it is sent to the chart.
          */
         formatData: function(data) {
+        },
+        /**
+         * Format of the ticks in the chart.
+         */
+        tickFormat: function(d) {
 
         },
-
         /**
          * Function called before the chart resize. Replace with your own if
          * you want.
          */
         beforeResize: function(chart, svg) {
-
         },
-
         /**
          * Function called after the chart resize. Replace with your own if
          * you want.
          */
         afterResize: function(chart, svg) {
-
         },
-
         /**
          * Creates the nvd3 model for the chart.
          */
         _create: function() {
             nv.addGraph(function() {
                 this._chart = this.nvModel();
-
                 if (this.nvModel.toString() == nv.models.pieChart.toString()) {
                     // PIE CHART
                     this._chart.x(function(d) { return d.label });
                     this._chart.y(function(d) { return d.value });
                 }; 
-
                 this.onCreate(this._chart, this._svg);
                 this._update();
-
                 this._updateStackedState();
                 
                 Resizer.add(this.root, function() {
                     this._update();
                 }.bind(this));
-
                 return this._chart;
             }.bind(this), function() {
                 this.afterCreate(this._chart, this._svg);
             }.bind(this));
         },
-
         /**
          * Updates the data of the chart. Called if it changed.
          */
         _update: function() {
-            if(!this._chart) return;
+            if(!this._chart || !this.data.length) return;
+            var self = this;
             this._updateStackedState();
-
-
             if(this.nvModel.toString() == nv.models.lineWithFocusChart.toString()){
                     // LINE VIEW FINDER
                     // Workaround to allow string as XAxis labels
-
                     data = this.data;
                     this._chart.xAxis.axisLabel("")
                         .showMaxMin(false) 
                         .tickFormat(function (d) {
-                          if (! data[0].values[d].label) return '';
-                          return data[0].values[d].label;
+                          return self.tickFormat(d);
                           })
                     ;
-
-                    this._chart.yAxis.axisLabel("")
-                        .showMaxMin(false) 
-                        .tickFormat(function (d) {
-                          return convertToHMS(d);
-                          })
-
-                    this._chart.x2Axis.axisLabel("")
-                        .showMaxMin(false) 
-                        .tickFormat(function (d) {
-                          if (! data[0].values[d].label) return '';
-                          return data[0].values[d].label;
-                          })
-                    ;
-
-                    this._chart.y2Axis.axisLabel("")
-                        .showMaxMin(false) 
-                        .tickFormat(function (d) {
-                          return '';
-                          })
-
+                    this._chart.showLegend(this.showControls);
             }else if(this.nvModel.toString() == nv.models.pieChart.toString()){
                 // PIE
-
-
-            }else if (this.nvModel.toString() == nv.models.multiBarChart.toString()){
-                // BAR
-                this._chart.showControls(this.showControls);
-            }
-
-            this._chart.showLegend(this.showControls);
-
+                this._chart.showLegend(this.showControls);
+            };
             this.formatData(this.data);
             this._svg.datum(this.data)
                 .call(this._chart);
             this._resize();
         },
-
-
         /**
          * Updates the stack attribute of applicable charts.
          */
-
         _updateStackedState: function() {
             if(!this._chart || !this.data.length) return;
-
             if (this.nvModel.toString() == nv.models.multiBarChart.toString()) {
                 // MULTI BAR
                 this._chart.stacked(this.stacked);
             };
         },
-
         /**
          * Resizes the chart. Called if the parent element's size changed.
          */
         _resize: function() {
             if(!this._chart) return;
             this.beforeResize(this._chart, this._svg);
-
             /*
              * The width is selected as follows:
              * - First, use the 'width' property if it is set.
@@ -278,20 +220,16 @@
                     this.root.offsetWidth : 1000);
             var h = this.height ? this.height : (this.fit ?
                     this.root.offsetHeight : w / 1.6180);
-
             this._chart
                 .width(w)
                 .height(h);
-
             this._svg.node().style.width = w + 'px';
             this._svg.node().style.height = h + 'px';
             this._svg
                 .call(this._chart);
-
             nv.utils.windowResize(this._chart.update);
             this.afterResize(this._chart, this._svg);
         },
-
         /*
          * Gets data from the request url.
          */
@@ -306,18 +244,5 @@
                 this._ajax.generateRequest();
             }
         }
-
     }
-
-    function convertToHMS(sec_num) {
-      var hours   = Math.floor( sec_num / 3600 );
-      var minutes = Math.floor( ( sec_num - ( hours * 3600 ) ) / 60 );
-      var seconds = sec_num - ( hours * 3600 ) - ( minutes * 60 );
-      if ( hours   < 10 ) { hours   = "0"+hours; }
-      if ( minutes < 10 ) { minutes = "0"+minutes; }
-      if ( seconds < 10 ) { seconds = "0"+seconds; }
-
-      return hours+':'+minutes+':'+seconds;
-    }
-
 </script>
